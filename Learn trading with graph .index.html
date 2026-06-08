@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trading Simulator with Graph</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0f172a;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    margin-top:20px;
+    border-radius:10px;
+}
+
+button{
+    padding:10px 15px;
+    margin:5px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.buy{background:green;color:white;}
+.sell{background:red;color:white;}
+.reset{background:orange;color:black;}
+
+.price{
+    font-size:28px;
+    margin:10px 0;
+}
+
+canvas{
+    background:#0b1220;
+    border-radius:10px;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📊 Trading Simulator (Graph Version)</h1>
+
+<div class="card">
+    <h2>Stock Price</h2>
+    <div class="price" id="price">$100</div>
+</div>
+
+<div class="card">
+    <canvas id="chart" width="700" height="300"></canvas>
+</div>
+
+<div class="card">
+    <p>Money: $<span id="money">1000</span></p>
+    <p>Stocks: <span id="stocks">0</span></p>
+    <p>Profit: <span id="profit">0</span></p>
+
+    <button class="buy" onclick="buy()">Buy</button>
+    <button class="sell" onclick="sell()">Sell</button>
+    <button class="reset" onclick="reset()">Reset</button>
+</div>
+
+</div>
+
+<script>
+
+let price = 100;
+let money = 1000;
+let stocks = 0;
+
+let prices = [100]; // graph data
+
+let canvas = document.getElementById("chart");
+let ctx = canvas.getContext("2d");
+
+function updatePrice(){
+
+    let change = Math.random() * 20 - 10; // -10 to +10
+    price += change;
+
+    if(price < 10) price = 10;
+
+    prices.push(price);
+
+    if(prices.length > 50){
+        prices.shift();
+    }
+
+    drawChart();
+    updateUI();
+}
+
+function drawChart(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    let max = Math.max(...prices);
+    let min = Math.min(...prices);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 2;
+
+    for(let i=0;i<prices.length;i++){
+
+        let x = i * (canvas.width / 50);
+        let y = canvas.height - ((prices[i]-min)/(max-min))*canvas.height;
+
+        if(i === 0){
+            ctx.moveTo(x,y);
+        } else {
+            ctx.lineTo(x,y);
+        }
+    }
+
+    ctx.stroke();
+}
+
+function updateUI(){
+    document.getElementById("price").innerText = "$" + price.toFixed(2);
+    document.getElementById("money").innerText = money;
+    document.getElementById("stocks").innerText = stocks;
+
+    let profit = (stocks * price + money) - 1000;
+    document.getElementById("profit").innerText = profit.toFixed(2);
+}
+
+function buy(){
+    if(money >= price){
+        money -= price;
+        stocks++;
+        updateUI();
+    } else {
+        alert("Not enough money!");
+    }
+}
+
+function sell(){
+    if(stocks > 0){
+        money += price;
+        stocks--;
+        updateUI();
+    }
+}
+
+function reset(){
+    price = 100;
+    money = 1000;
+    stocks = 0;
+    prices = [100];
+    drawChart();
+    updateUI();
+}
+
+// auto market movement
+setInterval(updatePrice, 1000);
+
+drawChart();
+updateUI();
+
+</script>
+
+</body>
+</html>
